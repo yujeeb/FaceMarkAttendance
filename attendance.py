@@ -6,16 +6,10 @@ from firebase_admin import credentials
 from firebase_admin import db
 from datetime import datetime
 
-# cred = credentials.Certificate("serviceAccountKey.json")
-# firebase_admin.initialize_app(cred, {
-#     'databaseURL': "",
-#     'storageBucket': ""
-# })
-
-cred = credentials.Certificate("serviceAccountKey2.json")
+cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred, {
-    'databaseURL': "https://instant-attendance-2-default-rtdb.asia-southeast1.firebasedatabase.app/",
-    'storageBucket': "instant-attendance-2.appspot.com"
+    'databaseURL': "",
+    'storageBucket': ""
 })
 
 mydata = []
@@ -159,9 +153,9 @@ class Attendance:
                           font=("times new roman", 12, "bold"), bg="green", fg="white")
         generate_atten_btn.grid(row=0, column=0, padx=1)
 
-        reset_btn = Button(btn_frame, command=self.reset_data, text="RESET", width=18,
+        delete_btn = Button(btn_frame, command=self.delete_data, text="DELETE", width=18,
                            font=("times new roman", 12, "bold"), bg="blue", fg="white")
-        reset_btn.grid(row=1, column=0, padx=1)
+        delete_btn.grid(row=1, column=0, padx=1)
 
         # right label frame
         Right_frame = LabelFrame(main_frame, bd=2, bg="white", relief=RIDGE, text="STUDENT ATTENDANCE DETAILS",
@@ -206,7 +200,7 @@ class Attendance:
         self.AttendanceReportTable.bind("<ButtonRelease>", self.get_cursor)
 
     def proceed(self):
-        if self.var_atten_dep.get() == "Select Department" or self.var_atten_st_year.get() == "Select Year" or self.var_atten_sem.get() == "Select Semester" or self.var_atten_sub.get() == "Select Subject" or self.var_atten_hour.get() == "Select Hour/Period" or self.var_atten_day.get() == "" or self.var_atten_month.get() == "" or self.var_atten_year.get() == "" or self.var_atten_name.get() == "" or self.var_atten_roll.get() == "":
+        if self.var_atten_dep.get() == "Select Department" or self.var_atten_st_year.get() == "Select Year" or self.var_atten_sem.get() == "Select Semester" or self.var_atten_sub.get() == "Select Subject" or self.var_atten_hour.get() == "Select Hour/Period" or self.var_atten_day.get() == "" or self.var_atten_month.get() == "" or self.var_atten_year.get() == "":
             return True
         else:
             return False
@@ -216,6 +210,26 @@ class Attendance:
             messagebox.showerror("ERROR", "Fill all the fields", parent=self.root)
         else:
             try:
+                # Total attendance
+                try:
+                    ref_total_attendance = db.reference(
+                        f"Attendance/{self.var_atten_dep.get()}/{self.var_atten_st_year.get()}/{self.var_atten_sem.get()}/{self.var_atten_sub.get()}").get()
+                    tot = 0
+                    for key, val in ref_total_attendance.items():
+                        print(val)
+                        for hour, roll in val.items():
+                            print(hour)
+                            print(roll)
+                            for roll_n, one in roll.items():
+                                studentIn = db.reference(f'Students/{self.var_atten_dep.get()}/{self.var_atten_st_year.get()}').get()
+                                if roll_n in studentIn.keys():
+                                    tot += 1
+                                    db.reference(
+                                        f'Students/{self.var_atten_dep.get()}/{self.var_atten_st_year.get()}/{roll_n}/total_attendance').child(
+                                        self.var_atten_sem.get()).child(self.var_atten_sub.get()).set(tot)
+                except Exception as es:
+                    pass
+
                 day = self.var_atten_day.get()
                 month = self.var_atten_month.get()
                 year = self.var_atten_year.get()
@@ -250,18 +264,55 @@ class Attendance:
         self.var_atten_attendance.set(rows[2])
 
     def reset_data(self):
-        self.var_atten_dep.set("Select Department")
-        self.var_atten_st_year.set("Select Year")
-        self.var_atten_sem.set("Select Semester")
-        self.var_atten_sub.set("Select Subject")
-        self.var_atten_hour.set("Select Hour/Period")
-        self.var_atten_day.set("")
-        self.var_atten_month.set("")
-        self.var_atten_year.set("")
-        self.var_atten_name.set("")
-        self.var_atten_roll.set("")
+        try:
+            self.var_atten_dep.set("Select Department")
+            self.var_atten_st_year.set("Select Year")
+            self.var_atten_sem.set("Select Semester")
+            self.var_atten_sub.set("Select Subject")
+            self.var_atten_hour.set("Select Hour/Period")
+            self.var_atten_day.set("")
+            self.var_atten_month.set("")
+            self.var_atten_year.set("")
+            self.var_atten_name.set("")
+            self.var_atten_roll.set("")
+        except Exception as es:
+            messagebox.showerror("Error", f"Due to:{str(es)}", parent=self.root)
+
+    def delete_data(self):
+        if self.var_atten_roll.get() == "":
+            messagebox.showerror("Error", "Roll Number is required", parent=self.root)
+        else:
+            try:
+                day = self.var_atten_day.get()
+                month = self.var_atten_month.get()
+                year = self.var_atten_year.get()
+                date_conv = datetime.strptime(f"{day} {month} {year}", "%d %m %Y")
+                date = date_conv.strftime("%d %B %Y")
+
+                total_attendance = db.reference(
+                    f"Students/{self.var_atten_dep.get()}/{self.var_atten_st_year.get()}/{self.var_atten_roll.get()}/total_attendance/{self.var_atten_sem.get()}/{self.var_atten_sub.get()}").get()
+                db.reference(
+                    f"Students/{self.var_atten_dep.get()}/{self.var_atten_st_year.get()}/{self.var_atten_roll.get()}/total_attendance/{self.var_atten_sem.get()}/{self.var_atten_sub.get()}").set(total_attendance-1)
+
+                att_ref = db.reference(
+                    f"Attendance/{self.var_atten_dep.get()}/{self.var_atten_st_year.get()}/{self.var_atten_sem.get()}/{self.var_atten_sub.get()}/{date}/{self.var_atten_hour.get()}")
+
+                delete = messagebox.askyesno("Confirmation", "Do you want to delete this student's attendance?",
+                                             parent=self.root)
+                if delete > 0:
+                    att_ref.child(self.var_atten_roll.get()).delete()
+                else:
+                    if not delete:
+                        return
+
+                self.AttendanceReportTable.delete(self.AttendanceReportTable.selection()[0])
+                messagebox.showinfo("Delete", "Successfully deleted student attendance", parent=self.root)
+                self.var_atten_attendance.set("Absent")
+            except Exception as es:
+                messagebox.showerror("Error", f"Due to:{str(es)}", parent=self.root)
 
 if __name__ == "__main__":
     root = Tk()
     obj = Attendance(root)
     root.mainloop()
+

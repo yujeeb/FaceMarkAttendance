@@ -1,14 +1,17 @@
-from tkinter import *
-from tkinter import ttk
-import cv2
-from tkinter import messagebox
+import pickle
+import face_recognition
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import db
+from firebase_admin import storage
+from tkinter import*
+from tkinter import ttk
+from tkinter import messagebox
+import cv2
 import tkinter as tk
+from tkinter import filedialog
 import os
 from PIL import Image, ImageTk
-from dataset_capture import App
 
 cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred, {
@@ -19,10 +22,13 @@ firebase_admin.initialize_app(cred, {
 capture_roll = ""
 
 class App:
-    def __init__(self, window, window_title, video_source=0):
+    def __init__(self, window, window_title, var_dep, var_year, video_source=0):
+        # self.root = root
         self.window = window
         self.window.title(window_title)
         self.video_source = video_source
+        self.var_dep = var_dep
+        self.var_year = var_year
 
         # open video source (by default this will try to open the computer webcam)
         self.cap = cv2.VideoCapture(self.video_source)
@@ -30,11 +36,15 @@ class App:
         # Create a label and entry field for the roll number
         self.roll_label = tk.Label(window, text="Roll Number:")
         self.roll_label.grid(row=0, column=0)
+
+        self.exit = tk.Button(window, text="Exit", width=25, fg="white", bg="red", command=self.exit_cap)
+        self.exit.grid(row=0, column=1)
+
         self.roll_entry = tk.Label(window, text=capture_roll, fg="black")
         self.roll_entry.grid(row=1, column=0)
 
         # Create a button for capturing the image
-        self.capture_button = tk.Button(window, text="Capture", width=25, command=self.capture)
+        self.capture_button = tk.Button(window, text="Capture", fg="white", bg="green", width=25, command=self.capture)
         self.capture_button.grid(row=1, column=1)
 
         # Create a label for displaying the webcam stream
@@ -45,42 +55,57 @@ class App:
 
         self.window.mainloop()
 
-    def update(self):
-        ret, frame = self.cap.read()
-        if ret:
-            # Crop the frame to a square
-            frame = frame[0: frame.shape[0],
-                    int((frame.shape[1] - frame.shape[0]) / 2): int((frame.shape[1] - frame.shape[0]) / 2) +
-                                                                frame.shape[0]]
+    def exit_cap(self):
+        try:
+            self.window.destroy()
+            self.cap.release()
+            cv2.destroyAllWindows()
+        except Exception as es:
+            messagebox.showerror("Error", f"Due to:{str(es)}", parent=self.window)
 
-            cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
-            img = Image.fromarray(cv2image)
-            imgtk = ImageTk.PhotoImage(image=img)
-            self.lmain.imgtk = imgtk
-            self.lmain.configure(image=imgtk)
-        self.window.after(10, self.update)
+    def update(self):
+        try:
+            ret, frame = self.cap.read()
+            if ret:
+                # Crop the frame to a square
+                frame = frame[0: frame.shape[0],
+                        int((frame.shape[1] - frame.shape[0]) / 2): int((frame.shape[1] - frame.shape[0]) / 2) +
+                                                                    frame.shape[0]]
+
+                cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+                img = Image.fromarray(cv2image)
+                imgtk = ImageTk.PhotoImage(image=img)
+                self.lmain.imgtk = imgtk
+                self.lmain.configure(image=imgtk)
+            self.window.after(10, self.update)
+        except Exception as es:
+            messagebox.showerror("Error", f"Due to:{str(es)}", parent=self.window)
 
     def capture(self):
-        ret, frame = self.cap.read()
-        if ret:
-            # Crop the frame to a square
-            frame = frame[0: frame.shape[0],
-                    int((frame.shape[1] - frame.shape[0]) / 2): int((frame.shape[1] - frame.shape[0]) / 2) +
-                                                                frame.shape[0]]
-            roll_number = capture_roll
-            if not roll_number:
-                print("Error: Please select a roll number.")
-                return
-            frame = cv2.resize(frame, (216, 216))
-            frame = frame[0:216, 0:216]
+        try:
+            ret, frame = self.cap.read()
+            if ret:
+                # Crop the frame to a square
+                frame = frame[0: frame.shape[0],
+                        int((frame.shape[1] - frame.shape[0]) / 2): int((frame.shape[1] - frame.shape[0]) / 2) +
+                                                                    frame.shape[0]]
+                roll_number = capture_roll
+                if not roll_number:
+                    print("Error: Please select a roll number.")
+                    return
+                frame = cv2.resize(frame, (216, 216))
+                frame = frame[0:216, 0:216]
 
-            file_name = roll_number + ".png"
-            if not os.path.exists("Images"):
-                os.makedirs("Images")
-            cv2.imwrite("Images/" + file_name, frame)
-            print("Captured " + file_name)
-        else:
-            print("Error: Could not capture image.")
+                file_name = roll_number + ".png"
+                if not os.path.exists("Images"):
+                    os.makedirs("Images")
+                cv2.imwrite("Images/" + file_name, frame)
+                print("Captured " + file_name)
+                db.reference("/").child("Students").child(self.var_dep).child(self.var_year).child(roll_number).child("Photo Sample").set("Yes")
+            else:
+                print("Error: Could not capture image.")
+        except Exception as es:
+            messagebox.showerror("Error", f"Due to:{str(es)}", parent=self.window)
 
 
 class Student:
@@ -205,11 +230,11 @@ class Student:
         radiobtn1.grid(row=7, column=0, padx=10, pady=2, sticky=W)
 
         radiobtn2 = ttk.Radiobutton(class_student_frame, variable=self.var_radio1, text="No Photo Sample", value="No")
-        radiobtn2.grid(row=7, column=1, padx=10, pady=2, sticky=W)
+        radiobtn2.grid(row=7, column=1, padx=33, pady=2, sticky=W)
 
         # Buttons frame
         btn_frame = Frame(class_student_frame, bd=2, bg="white", relief=RIDGE)
-        btn_frame.place(x=5, y=230, width=350, height=169)
+        btn_frame.place(x=90, y=230, width=175, height=169)
 
         save_btn = Button(btn_frame, text="Save", command=self.add_data, width=18, font=("times new roman", 12, "bold"), bg="blue", fg="white")
         save_btn.grid(row=0, column=0, padx=1)
@@ -254,9 +279,14 @@ class Student:
         gen_year_combo.current(0)
         gen_year_combo.grid(row=0, column=3, padx=2, pady=10)
 
-        fetch_btn = Button(generate_frame, text="FETCH DATA", command=self.fetch_data, width=18, font=("times new roman", 12, "bold"), bg="green",
+        fetch_btn = Button(generate_frame, text="FETCH DATA", command=self.fetch_data, width=16, font=("times new roman", 12, "bold"), bg="green",
                              fg="white")
         fetch_btn.grid(row=0, column=4, padx=4)
+
+        train_btn = Button(generate_frame, text="TRAIN DATA", command=self.encode_generate, width=16, font=("times new roman", 12, "bold"), bg="blue",
+                             fg="white")
+        train_btn.grid(row=0, column=5, padx=4)
+
 
         table_frame = LabelFrame(Right_frame, bd=2, bg="white", relief=RIDGE)
         table_frame.place(x=5, y=80, width=930, height=525)
@@ -288,10 +318,53 @@ class Student:
         self.student_table.pack(fill=BOTH, expand=1)
         self.student_table.bind("<ButtonRelease>", self.get_cursor)
 
+    def encode_generate(self):
+        try:
+            # Importing student images
+            folderPath = 'Images'
+            pathList = os.listdir(folderPath)
+            print(pathList)
+            imgList = []
+            studentIds = []
+            for path in pathList:
+                imgList.append(cv2.imread(os.path.join(folderPath, path)))
+                studentIds.append(os.path.splitext(path)[0])
+
+                fileName = f'{folderPath}/{path}'
+                bucket = storage.bucket()
+                blob = bucket.blob(fileName)
+                blob.upload_from_filename(fileName)
+            print(studentIds)
+
+            def findEncodings(imagesList):
+                encodeList = []
+                for img in imagesList:
+                    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                    encode = face_recognition.face_encodings(img)[0]
+                    encodeList.append(encode)
+
+                return encodeList
+
+            print("Encoding Started ...")
+            encodeListKnown = findEncodings(imgList)
+            encodeListKnownWithIds = [encodeListKnown, studentIds]
+            print("Encoding Complete")
+
+            file = open("EncodeFile.p", 'wb')
+            pickle.dump(encodeListKnownWithIds, file)
+            file.close()
+            print("File Saved")
+            messagebox.showinfo("Success", "Images trained successfully", parent=self.root)
+        except Exception as es:
+            messagebox.showerror("Error", f"Due to:{str(es)}", parent=self.root)
+
     def data_capture(self):
-        global capture_roll
-        capture_roll = self.var_rollNo.get()
-        App(Toplevel(self.root), "FACE MARK ATTENDANCE - IMAGE CAPTURE")
+        try:
+            global capture_roll
+            capture_roll = self.var_rollNo.get()
+            App(Toplevel(self.root), "FACE MARK ATTENDANCE - IMAGE CAPTURE", self.var_dep.get(), self.var_year.get())
+        except Exception as es:
+            messagebox.showerror("Error", f"Due to:{str(es)}", parent=self.root)
 
     # =============fetch data===========
 
@@ -354,8 +427,6 @@ class Student:
                         self.var_rollNo.get().upper():
                             {
                                 "Department": self.var_dep.get(),
-                                "last_attendance_time": "",
-                                "standing": "G",
                                 "total_attendance": "0",
                                 "Year": self.var_year.get(),
                                 "Semester": self.var_sem.get(),
@@ -432,8 +503,7 @@ class Student:
                         db.reference(f'Students/{self.var_dep.get()}/{self.var_year.get()}/{ref_id}/Email').get(),
                         db.reference(f'Students/{self.var_dep.get()}/{self.var_year.get()}/{ref_id}/Address').get(),
                         db.reference(f'Students/{self.var_dep.get()}/{self.var_year.get()}/{ref_id}/Phone Number').get(),
-                        db.reference(f'Students/{self.var_dep.get()}/{self.var_year.get()}/{ref_id}/Photo Sample').get(),
-                        db.reference(f'Students/{self.var_dep.get()}/{self.var_year.get()}/{ref_id}/Reference ID').get()
+                        db.reference(f'Students/{self.var_dep.get()}/{self.var_year.get()}/{ref_id}/Photo Sample').get()
                     ))
                 else:
                     if not update:
@@ -469,20 +539,24 @@ class Student:
 
     # =================reset=======================
     def reset_data(self):
-        self.var_rollNo.set(""),
-        self.var_stName.set(""),
-        self.var_dep.set("Select Department"),
-        self.var_year.set("Select Year"),
-        self.var_sem.set("Select Semester"),
-        self.var_gender.set("Gender"),
-        self.var_dob.set(""),
-        self.var_email.set(""),
-        self.var_address.set(""),
-        self.var_phoneNo.set(""),
-        self.var_radio1.set("")
+        try:
+            self.var_rollNo.set(""),
+            self.var_stName.set(""),
+            self.var_dep.set("Select Department"),
+            self.var_year.set("Select Year"),
+            self.var_sem.set("Select Semester"),
+            self.var_gender.set("Gender"),
+            self.var_dob.set(""),
+            self.var_email.set(""),
+            self.var_address.set(""),
+            self.var_phoneNo.set(""),
+            self.var_radio1.set("")
+        except Exception as es:
+            messagebox.showerror("Error", f"Due to:{str(es)}", parent=self.root)
 
 
 if __name__ == "__main__":
-    root = Tk()
-    obj = Student(root)
-    root.mainloop()
+        root = Tk()
+        obj = Student(root)
+        root.mainloop()
+

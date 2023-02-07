@@ -22,7 +22,7 @@ firebase_admin.initialize_app(cred, {
 class Face_Recognition:
     def __init__(self, root):
         self.root = root
-        self.root.geometry("380x400+0+0")
+        self.root.geometry("380x360+0+0")
         self.root.title("FACE MARK ATTENDANCE")
 
         self.var_dep = StringVar()
@@ -42,7 +42,7 @@ class Face_Recognition:
         date_label.grid(row=0, column=0, padx=10, pady=10, sticky=W)
 
         today_label = Label(input_frame, text=datetime.today().strftime("%d %B %Y"),
-                            font=("times new roman", 12, "bold"), fg="white", bg="green")
+                            font=("times new roman", 12, "bold"), fg="white", bg="red")
         today_label.grid(row=0, column=1, padx=30, pady=10, sticky=W)
 
         dep_label = Label(input_frame, text="Department : ", font=("times new roman", 12, "bold"), bg="white")
@@ -90,14 +90,9 @@ class Face_Recognition:
         per_combo.current(0)
         per_combo.grid(row=5, column=1, padx=2, pady=10)
 
-        # TRAIN DATA
-        b1_1 = Button(text="TRAIN DATA", command=self.encode_generate, cursor="hand2", font=("times new roman", 15, "bold"),
-                      bg="blue", fg="white")
+        b1_1 = Button(self.root, text="MARK ATTENDANCE", command=self.face_recog, cursor="hand2",
+                      font=("times new roman", 18, "bold"), bg="green", fg="white")
         b1_1.place(x=5, y=310, width=370, height=40)
-
-        b1_1 = Button(self.root, text="FACE RECOGNITION", command=self.face_recog, cursor="hand2",
-                      font=("times new roman", 18, "bold"), bg="red", fg="white")
-        b1_1.place(x=5, y=350, width=370, height=40)
 
     def proceed(self):
         if self.var_dep.get() == "Select Department" or self.var_year.get() == "Select Year" or self.var_sem.get() == "Select Semester" or self.var_sub.get() == "Select Subject" or self.var_period.get() == "Select Hour":
@@ -105,26 +100,27 @@ class Face_Recognition:
         else:
             return False
 
-
     def face_recog(self):
         if self.proceed():
             messagebox.showerror("ERROR", "Fill all the fields", parent=self.root)
         else:
             try:
                 # Total attendance
-                ref_total_attendance = db.reference(f"Attendance/{self.var_dep.get()}/{self.var_year.get()}/{self.var_sem.get()}/{self.var_sub.get()}").get()
-                tot = 0
-                for key, val in ref_total_attendance.items():
-                    print(val)
-                    for hour, roll in val.items():
-                        print(hour)
-                        print(roll)
-                        for roll_n , one in roll.items():
-                            studentIn = db.reference(f'Students/{self.var_dep.get()}/{self.var_year.get()}').get()
-                            if roll_n in studentIn.keys():
-                                tot += 1
-                                studentInfo = db.reference(f'Students/{self.var_dep.get()}/{self.var_year.get()}/{roll_n}/total_attendance').child(self.var_sem.get()).child(self.var_sub.get()).set(tot)
-
+                try:
+                    ref_total_attendance = db.reference(f"Attendance/{self.var_dep.get()}/{self.var_year.get()}/{self.var_sem.get()}/{self.var_sub.get()}").get()
+                    tot = 0
+                    for key, val in ref_total_attendance.items():
+                        print(val)
+                        for hour, roll in val.items():
+                            print(hour)
+                            print(roll)
+                            for roll_n , one in roll.items():
+                                studentIn = db.reference(f'Students/{self.var_dep.get()}/{self.var_year.get()}').get()
+                                if roll_n in studentIn.keys():
+                                    tot += 1
+                                    db.reference(f'Students/{self.var_dep.get()}/{self.var_year.get()}/{roll_n}/total_attendance').child(self.var_sem.get()).child(self.var_sub.get()).set(tot)
+                except Exception as es:
+                    pass
 
                 bucket = storage.bucket()
 
@@ -209,7 +205,7 @@ class Face_Recognition:
 
                                 studentInfo = db.reference(f'Students/{self.var_dep.get()}/{self.var_year.get()}/{id}').get()
                                 print(studentInfo)
-                                total_att = db.reference(f'Students/{self.var_dep.get()}/{self.var_year.get()}/{roll_n}/total_attendance').child(self.var_sem.get()).child(self.var_sub.get()).get()
+                                total_att = db.reference(f'Students/{self.var_dep.get()}/{self.var_year.get()}/{id}/total_attendance').child(self.var_sem.get()).child(self.var_sub.get()).get()
                                 if studentInfo is not None:
 
                                     imgBackground[44:44 + 633, 808:808 + 414] = imgModeList[modeType]
@@ -235,51 +231,17 @@ class Face_Recognition:
                     cv2.imshow("Face Attendance", imgBackground)
                     cv2.waitKey(1)
 
-                    if cv2.waitKey(1)==13:
+                    if cv2.waitKey(0) == 13:
                         break
                 cap.release()
                 cv2.destroyAllWindows()
             except Exception as es:
                 messagebox.showerror("Error", f"Due to:{str(es)}", parent=self.root)
 
-    def encode_generate(self):
-
-        # Importing student images
-        folderPath = 'Images'
-        pathList = os.listdir(folderPath)
-        print(pathList)
-        imgList = []
-        studentIds = []
-        for path in pathList:
-            imgList.append(cv2.imread(os.path.join(folderPath, path)))
-            studentIds.append(os.path.splitext(path)[0])
-
-            fileName = f'{folderPath}/{path}'
-            bucket = storage.bucket()
-            blob = bucket.blob(fileName)
-            blob.upload_from_filename(fileName)
-        print(studentIds)
-
-        def findEncodings(imagesList):
-            encodeList = []
-            for img in imagesList:
-                img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-                encode = face_recognition.face_encodings(img)[0]
-                encodeList.append(encode)
-
-            return encodeList
-
-        print("Encoding Started ...")
-        encodeListKnown = findEncodings(imgList)
-        encodeListKnownWithIds = [encodeListKnown, studentIds]
-        print("Encoding Complete")
-
-        file = open("EncodeFile.p", 'wb')
-        pickle.dump(encodeListKnownWithIds, file)
-        file.close()
-        print("File Saved")
-
 if __name__ == "__main__":
-    root = Tk()
-    obj = Face_Recognition(root)
-    root.mainloop()
+    try:
+        root = Tk()
+        obj = Face_Recognition(root)
+        root.mainloop()
+    except Exception as es:
+        print(es)
