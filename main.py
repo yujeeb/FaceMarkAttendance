@@ -24,7 +24,7 @@ class Face_Recognition:
         self.root = root
         self.root.geometry("380x360+0+0")
         self.root.title("FACE MARK ATTENDANCE")
-        # self.root.iconbitmap('Resources/logo.ico')
+        self.root.iconbitmap('Resources/logo.ico')
 
         self.var_dep = StringVar()
         self.var_year = StringVar()

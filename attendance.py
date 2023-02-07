@@ -20,7 +20,7 @@ class Attendance:
         self.root = root
         self.root.geometry("1366x768+0+0")
         self.root.title("FACE MARK ATTENDANCE - ATTENDANCE MANAGER")
-        # self.root.iconbitmap('Resources/logo.ico')
+        self.root.iconbitmap('Resources/logo.ico')
 
         # ===========varaibles===============
         self.var_atten_id = StringVar()

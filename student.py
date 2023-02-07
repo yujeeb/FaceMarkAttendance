@@ -25,7 +25,7 @@ class App:
     def __init__(self, window, window_title, var_dep, var_year, video_source=0):
         self.window = window
         self.window.title(window_title)
-        # self.window.iconbitmap('Resources/logo.ico')
+        self.window.iconbitmap('Resources/logo.ico')
         self.video_source = video_source
         self.var_dep = var_dep
         self.var_year = var_year
@@ -113,7 +113,7 @@ class Student:
         self.root = root
         self.root.geometry("1360x710+0+0")
         self.root.title("FACE MARK ATTENDANCE - STUDENT MANAGER")
-        # self.root.iconbitmap('Resources/logo.ico')
+        self.root.iconbitmap('Resources/logo.ico')
 
         # =======================Variables=====================
         self.var_dep = StringVar()
