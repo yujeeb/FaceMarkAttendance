@@ -312,7 +312,6 @@ class Student:
         self.student_table.heading("address", text="Address")
         self.student_table.heading("phoneNo", text="Phone Number")
         self.student_table.heading("photoSample", text="Photo Sample")
-        # self.student_table.heading("refID", text="Reference ID")
         self.student_table["show"] = "headings"
 
         self.student_table.pack(fill=BOTH, expand=1)
