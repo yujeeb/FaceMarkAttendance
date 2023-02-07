@@ -15,17 +15,17 @@ from PIL import Image, ImageTk
 
 cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred, {
-    'databaseURL': "",
-    'storageBucket': ""
+    'databaseURL': "https://face-mark-attendance-default-rtdb.asia-southeast1.firebasedatabase.app/",
+    'storageBucket': "face-mark-attendance.appspot.com"
 })
 
 capture_roll = ""
 
 class App:
     def __init__(self, window, window_title, var_dep, var_year, video_source=0):
-        # self.root = root
         self.window = window
         self.window.title(window_title)
+        # self.window.iconbitmap('')
         self.video_source = video_source
         self.var_dep = var_dep
         self.var_year = var_year
@@ -113,6 +113,7 @@ class Student:
         self.root = root
         self.root.geometry("1360x710+0+0")
         self.root.title("FACE MARK ATTENDANCE - STUDENT MANAGER")
+        # self.root.iconbitmap('')
 
         # =======================Variables=====================
         self.var_dep = StringVar()

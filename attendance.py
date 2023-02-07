@@ -8,8 +8,8 @@ from datetime import datetime
 
 cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred, {
-    'databaseURL': "",
-    'storageBucket': ""
+    'databaseURL': "https://face-mark-attendance-default-rtdb.asia-southeast1.firebasedatabase.app/",
+    'storageBucket': "face-mark-attendance.appspot.com"
 })
 
 mydata = []
@@ -20,6 +20,7 @@ class Attendance:
         self.root = root
         self.root.geometry("1366x768+0+0")
         self.root.title("FACE MARK ATTENDANCE - ATTENDANCE MANAGER")
+        # self.root.iconbitmap('')
 
         # ===========varaibles===============
         self.var_atten_id = StringVar()

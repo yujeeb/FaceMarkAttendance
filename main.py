@@ -15,8 +15,8 @@ from tkinter import messagebox
 
 cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred, {
-    'databaseURL': "",
-    'storageBucket': ""
+    'databaseURL': "https://face-mark-attendance-default-rtdb.asia-southeast1.firebasedatabase.app/",
+    'storageBucket': "face-mark-attendance.appspot.com"
 })
 
 class Face_Recognition:
@@ -24,6 +24,7 @@ class Face_Recognition:
         self.root = root
         self.root.geometry("380x360+0+0")
         self.root.title("FACE MARK ATTENDANCE")
+        # self.root.iconbitmap('')
 
         self.var_dep = StringVar()
         self.var_year = StringVar()
@@ -202,14 +203,34 @@ class Face_Recognition:
                                         self.var_period.get()).child(id).set(1)
 
                             if modeType != 3:
+                                try:
+                                    ref_total_attendance = db.reference(
+                                        f"Attendance/{self.var_dep.get()}/{self.var_year.get()}/{self.var_sem.get()}/{self.var_sub.get()}").get()
+                                    tot = 0
+                                    for key, val in ref_total_attendance.items():
+                                        print(val)
+                                        for hour, roll in val.items():
+                                            print(hour)
+                                            print(roll)
+                                            for roll_n, one in roll.items():
+                                                studentIn = db.reference(
+                                                    f'Students/{self.var_dep.get()}/{self.var_year.get()}').get()
+                                                if roll_n in studentIn.keys():
+                                                    tot += 1
+                                                    db.reference(
+                                                        f'Students/{self.var_dep.get()}/{self.var_year.get()}/{roll_n}/total_attendance').child(
+                                                        self.var_sem.get()).child(self.var_sub.get()).set(tot)
+                                except Exception as es:
+                                    pass
 
                                 studentInfo = db.reference(f'Students/{self.var_dep.get()}/{self.var_year.get()}/{id}').get()
                                 print(studentInfo)
                                 total_att = db.reference(f'Students/{self.var_dep.get()}/{self.var_year.get()}/{id}/total_attendance').child(self.var_sem.get()).child(self.var_sub.get()).get()
+
                                 if studentInfo is not None:
 
                                     imgBackground[44:44 + 633, 808:808 + 414] = imgModeList[modeType]
-                                    cv2.putText(imgBackground, str(total_att), (861, 125),
+                                    cv2.putText(imgBackground, str(total_att) if total_att is not None else "1", (861, 125),
                                                 cv2.FONT_HERSHEY_COMPLEX, 1, (255, 255, 255), 1)
                                     cv2.putText(imgBackground, str(studentInfo['Department']), (1006, 550),
                                                 cv2.FONT_HERSHEY_COMPLEX, 0.5, (255, 255, 255), 1)
