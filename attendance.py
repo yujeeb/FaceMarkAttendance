@@ -33,8 +33,6 @@ class Attendance:
         self.var_atten_month = StringVar()
         self.var_atten_year = StringVar()
         self.var_atten_hour = StringVar()
-        # self.var_atten_time = StringVar()
-        # self.var_atten_date = StringVar()
         self.var_atten_attendance = StringVar()
 
         title_lbl = Label(text="ATTENDANCE MANAGEMENT SYSTEM", font=("times new roman", 35, "bold"), bg="white",
@@ -177,23 +175,17 @@ class Attendance:
         scroll_x.config(command=self.AttendanceReportTable.xview)
         scroll_y.config(command=self.AttendanceReportTable.yview)
 
-        # self.AttendanceReportTable.heading("id", text="Attendance ID")
         self.AttendanceReportTable.heading("roll", text="Roll Number")
         self.AttendanceReportTable.heading("name", text="Name")
-        # self.AttendanceReportTable.heading("department", text="Department")
         self.AttendanceReportTable.heading("present", text="Present/Absent")
         self.AttendanceReportTable.heading("total_attendance", text="Subject Total Attendance")
-        # self.AttendanceReportTable.heading("attendance", text="Attendance")
 
         self.AttendanceReportTable["show"] = "headings"
 
-        # self.AttendanceReportTable.column("id", width=100)
         self.AttendanceReportTable.column("roll", width=100)
         self.AttendanceReportTable.column("name", width=100)
-        # self.AttendanceReportTable.column("department", width=100)
         self.AttendanceReportTable.column("present", width=100)
         self.AttendanceReportTable.column("total_attendance", width=100)
-        # self.AttendanceReportTable.column("attendance", width=100)
 
         self.AttendanceReportTable.pack(fill=BOTH, expand=1)
 
