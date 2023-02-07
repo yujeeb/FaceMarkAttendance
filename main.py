@@ -15,8 +15,8 @@ from tkinter import messagebox
 
 cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred, {
-    'databaseURL': "https://face-mark-attendance-default-rtdb.asia-southeast1.firebasedatabase.app/",
-    'storageBucket': "face-mark-attendance.appspot.com"
+    'databaseURL': "",
+    'storageBucket': ""
 })
 
 class Face_Recognition:
