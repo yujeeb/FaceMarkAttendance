@@ -15,8 +15,8 @@ from PIL import Image, ImageTk
 
 cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred, {
-    'databaseURL': "",
-    'storageBucket': ""
+    'databaseURL': "https://face-mark-attendance-default-rtdb.asia-southeast1.firebasedatabase.app/",
+    'storageBucket': "face-mark-attendance.appspot.com"
 })
 
 capture_roll = ""
@@ -156,7 +156,7 @@ class Student:
         year_label.grid(row=1, column=0, padx=10, sticky=W)
 
         year_combo = ttk.Combobox(current_course_frame, textvariable=self.var_year, font=("times new roman", 12, "bold"), state="readonly")
-        year_combo["values"] = ("Select Year", "2022-2026", "2021-2025", "2020-2024", "2019-2023")
+        year_combo["values"] = ("Select Year", "2021-2025")   #  "2022-2026", , "2020-2024", "2019-2023"
         year_combo.current(0)
         year_combo.grid(row=1, column=1, padx=2, pady=10)
 
@@ -165,7 +165,7 @@ class Student:
         semester_label.grid(row=2, column=0, padx=10, sticky=W)
 
         semester_combo = ttk.Combobox(current_course_frame, textvariable=self.var_sem, font=("times new roman", 12, "bold"), state="readonly")
-        semester_combo["values"] = ("Select Semester", "Semester 1", "Semester 2", "Semester 3")
+        semester_combo["values"] = ("Select Semester", "Semester 3")    # "Semester 1", "Semester 2",
         semester_combo.current(0)
         semester_combo.grid(row=2, column=1, padx=2, pady=10)
 
@@ -276,7 +276,7 @@ class Student:
 
         gen_year_combo = ttk.Combobox(generate_frame, textvariable=self.var_year,
                                   font=("times new roman", 12, "bold"), state="readonly")
-        gen_year_combo["values"] = ("Select Year", "2022-2026", "2021-2025", "2020-2024", "2019-2023")
+        gen_year_combo["values"] = ("Select Year", "2021-2025")   # "2022-2026", "2020-2024", "2019-2023"
         gen_year_combo.current(0)
         gen_year_combo.grid(row=0, column=3, padx=2, pady=10)
 
@@ -490,7 +490,8 @@ class Student:
                         "Email": self.var_email.get(),
                         "Address": self.var_address.get(),
                         "Phone Number": self.var_phoneNo.get(),
-                        "Photo Sample": self.var_radio1.get()
+                        "Photo Sample": self.var_radio1.get(),
+                        "total_attendance": db.reference(f'Students/{self.var_dep.get()}/{self.var_year.get()}/{ref_id}/total_attendance').get()
                     }})
                     self.student_table.item(self.student_table.focus(), text="", values=(
                         db.reference(f'Students/{self.var_dep.get()}/{self.var_year.get()}/{ref_id}/Roll Number').get(),

@@ -8,8 +8,8 @@ from datetime import datetime
 
 cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred, {
-    'databaseURL': "",
-    'storageBucket': ""
+    'databaseURL': "https://face-mark-attendance-default-rtdb.asia-southeast1.firebasedatabase.app/",
+    'storageBucket': "face-mark-attendance.appspot.com"
 })
 
 mydata = []
@@ -93,14 +93,14 @@ class Attendance:
 
         sem_combo = ttk.Combobox(left_inside_frame, textvariable=self.var_atten_sem, font=("times new roman", 12, "bold"),
                                  state="readonly")
-        sem_combo["values"] = ("Select Semester", "Semester-1", "Semester-2", "Semester-3")
+        sem_combo["values"] = ("Select Semester", "Semester-3")
         sem_combo.current(0)
         sem_combo.grid(row=2, column=0, padx=12, pady=10)
 
         # subject label
         sub_combo = ttk.Combobox(left_inside_frame, textvariable=self.var_atten_sub, font=("times new roman", 12, "bold"),
                                  state="readonly")
-        sub_combo["values"] = ("Select Subject", "SFD", "DAA", "DBMS", "OS")
+        sub_combo["values"] = ("Select Subject", "SIP", "PYTHON LAB", "DBMS LAB", "OS LAB", "SFD", "DAA", "DBMS", "OS")
         sub_combo.current(0)
         sub_combo.grid(row=3, column=0, padx=12, pady=10)
 
@@ -168,7 +168,7 @@ class Attendance:
         scroll_y = ttk.Scrollbar(table_frame, orient=VERTICAL)
 
         self.AttendanceReportTable = ttk.Treeview(table_frame, column=(
-        "roll", "name", "present", "total_attendance"), xscrollcommand=scroll_x.set,
+        "roll", "name", "present"), xscrollcommand=scroll_x.set,
                                                   yscrollcommand=scroll_y.set)
 
         scroll_x.pack(side=BOTTOM, fill=X)
@@ -179,14 +179,14 @@ class Attendance:
         self.AttendanceReportTable.heading("roll", text="Roll Number")
         self.AttendanceReportTable.heading("name", text="Name")
         self.AttendanceReportTable.heading("present", text="Present/Absent")
-        self.AttendanceReportTable.heading("total_attendance", text="Subject Total Attendance")
+        # self.AttendanceReportTable.heading("total_attendance", text="Subject Total Attendance")
 
         self.AttendanceReportTable["show"] = "headings"
 
         self.AttendanceReportTable.column("roll", width=100)
         self.AttendanceReportTable.column("name", width=100)
         self.AttendanceReportTable.column("present", width=100)
-        self.AttendanceReportTable.column("total_attendance", width=100)
+        # self.AttendanceReportTable.column("total_attendance", width=100)
 
         self.AttendanceReportTable.pack(fill=BOTH, expand=1)
 
@@ -204,24 +204,24 @@ class Attendance:
         else:
             try:
                 # Total attendance
-                try:
-                    ref_total_attendance = db.reference(
-                        f"Attendance/{self.var_atten_dep.get()}/{self.var_atten_st_year.get()}/{self.var_atten_sem.get()}/{self.var_atten_sub.get()}").get()
-                    tot = 0
-                    for key, val in ref_total_attendance.items():
-                        print(val)
-                        for hour, roll in val.items():
-                            print(hour)
-                            print(roll)
-                            for roll_n, one in roll.items():
-                                studentIn = db.reference(f'Students/{self.var_atten_dep.get()}/{self.var_atten_st_year.get()}').get()
-                                if roll_n in studentIn.keys():
-                                    tot += 1
-                                    db.reference(
-                                        f'Students/{self.var_atten_dep.get()}/{self.var_atten_st_year.get()}/{roll_n}/total_attendance').child(
-                                        self.var_atten_sem.get()).child(self.var_atten_sub.get()).set(tot)
-                except Exception as es:
-                    pass
+                # try:
+                #     ref_total_attendance = db.reference(
+                #         f"Attendance/{self.var_atten_dep.get()}/{self.var_atten_st_year.get()}/{self.var_atten_sem.get()}/{self.var_atten_sub.get()}").get()
+                #     tot = 0
+                #     for key, val in ref_total_attendance.items():
+                #         print(val)
+                #         for hour, roll in val.items():
+                #             print(hour)
+                #             print(roll)
+                #             for roll_n, one in roll.items():
+                #                 studentIn = db.reference(f'Students/{self.var_atten_dep.get()}/{self.var_atten_st_year.get()}').get()
+                #                 if roll_n in studentIn.keys():
+                #                     tot += 1
+                #                     db.reference(
+                #                         f'Students/{self.var_atten_dep.get()}/{self.var_atten_st_year.get()}/{roll_n}/total_attendance').child(
+                #                         self.var_atten_sem.get()).child(self.var_atten_sub.get()).set(tot)
+                # except Exception as es:
+                #     pass
 
                 day = self.var_atten_day.get()
                 month = self.var_atten_month.get()
@@ -240,10 +240,9 @@ class Attendance:
                 stu_ref = db.reference(f"Students/{self.var_atten_dep.get()}/{self.var_atten_st_year.get()}").get()
 
                 for key, val in stu_ref.items():
-                    total_attendance = db.reference(f"Students/{self.var_atten_dep.get()}/{self.var_atten_st_year.get()}/{key}/total_attendance/{self.var_atten_sem.get()}/{self.var_atten_sub.get()}").get()
+                    # total_attendance = db.reference(f"Students/{self.var_atten_dep.get()}/{self.var_atten_st_year.get()}/{key}/total_attendance/{self.var_atten_sem.get()}/{self.var_atten_sub.get()}").get()
                     self.AttendanceReportTable.insert("", END, values=(key, val["Student Name"],
-                                                                       "Present" if atten_rolls.setdefault(key) == 1 else "Absent",
-                                                                       total_attendance))
+                                                                       "Present" if atten_rolls.setdefault(key) == 1 else "Absent"))
             except Exception as es:
                 messagebox.showerror("Error", f"Due to:{str(es)}", parent=self.root)
 
@@ -282,10 +281,10 @@ class Attendance:
                 date_conv = datetime.strptime(f"{day} {month} {year}", "%d %m %Y")
                 date = date_conv.strftime("%d %B %Y")
 
-                total_attendance = db.reference(
-                    f"Students/{self.var_atten_dep.get()}/{self.var_atten_st_year.get()}/{self.var_atten_roll.get()}/total_attendance/{self.var_atten_sem.get()}/{self.var_atten_sub.get()}").get()
-                db.reference(
-                    f"Students/{self.var_atten_dep.get()}/{self.var_atten_st_year.get()}/{self.var_atten_roll.get()}/total_attendance/{self.var_atten_sem.get()}/{self.var_atten_sub.get()}").set(total_attendance-1)
+                # total_attendance = db.reference(
+                #     f"Students/{self.var_atten_dep.get()}/{self.var_atten_st_year.get()}/{self.var_atten_roll.get()}/total_attendance/{self.var_atten_sem.get()}/{self.var_atten_sub.get()}").get()
+                # db.reference(
+                    # f"Students/{self.var_atten_dep.get()}/{self.var_atten_st_year.get()}/{self.var_atten_roll.get()}/total_attendance/{self.var_atten_sem.get()}/{self.var_atten_sub.get()}").set(total_attendance-1)
 
                 att_ref = db.reference(
                     f"Attendance/{self.var_atten_dep.get()}/{self.var_atten_st_year.get()}/{self.var_atten_sem.get()}/{self.var_atten_sub.get()}/{date}/{self.var_atten_hour.get()}")
