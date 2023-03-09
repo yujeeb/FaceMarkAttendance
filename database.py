@@ -1,0 +1,2 @@
+databaseURL = ""
+storageBucket = ""

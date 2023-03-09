@@ -13,10 +13,12 @@ from tkinter import*
 from tkinter import ttk
 from tkinter import messagebox
 
+import database
+
 cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred, {
-    'databaseURL': "https://face-mark-attendance-default-rtdb.asia-southeast1.firebasedatabase.app/",
-    'storageBucket': "face-mark-attendance.appspot.com"
+    'databaseURL': database.databaseURL,
+    'storageBucket': database.storageBucket
 })
 
 class Face_Recognition:

@@ -5,11 +5,12 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import db
 from datetime import datetime
+import database
 
 cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred, {
-    'databaseURL': "https://face-mark-attendance-default-rtdb.asia-southeast1.firebasedatabase.app/",
-    'storageBucket': "face-mark-attendance.appspot.com"
+    'databaseURL': database.databaseURL,
+    'storageBucket': database.storageBucket
 })
 
 mydata = []

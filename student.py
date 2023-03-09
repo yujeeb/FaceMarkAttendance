@@ -13,10 +13,12 @@ from tkinter import filedialog
 import os
 from PIL import Image, ImageTk
 
+import database
+
 cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred, {
-    'databaseURL': "https://face-mark-attendance-default-rtdb.asia-southeast1.firebasedatabase.app/",
-    'storageBucket': "face-mark-attendance.appspot.com"
+    'databaseURL': database.databaseURL,
+    'storageBucket': database.storageBucket
 })
 
 capture_roll = ""
