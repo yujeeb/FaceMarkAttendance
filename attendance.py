@@ -5,7 +5,7 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import db
 from datetime import datetime
-import database
+from database import database
 
 cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred, {
@@ -69,31 +69,6 @@ class Attendance:
                                            font=("times new roman", 12, "bold"), state="readonly")
         atten_total_absentees.grid(row=3, column=0, padx=15, pady=2, sticky=W)
 
-        # roll number
-        # rollLabel = Label(Left_frame, text="ROLL NUMBER: ", font=("times new roman", 12, "bold"), bg="white")
-        # rollLabel.grid(row=2, column=0, padx=15, pady=2, sticky=W)
-        #
-        # atten_roll = ttk.Entry(Left_frame, width=30, textvariable=self.var_atten_roll,
-        #                        font=("times new roman", 12, "bold"), state="readonly")
-        # atten_roll.grid(row=3, column=0, padx=15, pady=2, sticky=W)
-        #
-        # # name
-        # nameLabel = Label(Left_frame, text="NAME: ", font=("times new roman", 12, "bold"), bg="white")
-        # nameLabel.grid(row=4, column=0, padx=15, pady=2, sticky=W)
-        #
-        # atten_name = ttk.Entry(Left_frame, width=30, textvariable=self.var_atten_name,
-        #                        font=("times new roman", 12, "bold"), state="readonly")
-        # atten_name.grid(row=5, column=0, padx=15, pady=2, sticky=W)
-
-        # present or not
-        # present_label = Label(Left_frame, text="PRESENT/ABSENT: ", font=("times new roman", 12, "bold"), bg="white")
-        # present_label.grid(row=4, column=0, padx=15, pady=2, sticky=W)
-        #
-        # atten_present = ttk.Entry(Left_frame, width=30, textvariable=self.var_atten_attendance,
-        #                        font=("times new roman", 12, "bold"), state="readonly")
-        # atten_present.grid(row=5, column=0, padx=15, pady=2, sticky=W)
-        #
-
         # left inside frame
         left_inside_frame = Frame(Left_frame, bd=2, relief=RIDGE, bg="white")
         left_inside_frame.place(x=27, y=125, width=210, height=470  )
@@ -134,14 +109,6 @@ class Attendance:
         hour_combo["values"] = ("Select Hour/Period", "Hour 1", "Hour 2", "Hour 3", "Hour 4", "Hour 5", "Hour 6")
         hour_combo.current(0)
         hour_combo.grid(row=4, column=0, padx=12, pady=10)
-
-        # Present/Absent
-        # att_combo = ttk.Combobox(left_inside_frame, textvariable=self.var_atten_attendance,
-        #                          font=("times new roman", 12, "bold"),
-        #                          state="readonly")
-        # att_combo["values"] = ("Select Option", "Presentees", "Absentees")
-        # att_combo.current(0)
-        # att_combo.grid(row=5, column=0, padx=12, pady=10)
 
         # date label
         date_label = Label(left_inside_frame, text="SPECIFY DATE", font=("times new roman", 12, "bold"), bg="white")
@@ -213,15 +180,11 @@ class Attendance:
 
         self.PresenteesReportTable.heading("roll", text="Roll Number")
         self.PresenteesReportTable.heading("name", text="Name")
-        # self.AttendanceReportTable.heading("present", text="Present/Absent")
-        # self.AttendanceReportTable.heading("total_attendance", text="Subject Total Attendance")
 
         self.PresenteesReportTable["show"] = "headings"
 
         self.PresenteesReportTable.column("roll", width=100)
         self.PresenteesReportTable.column("name", width=100)
-        # self.AttendanceReportTable.column("present", width=100)
-        # self.AttendanceReportTable.column("total_attendance", width=100)
 
         self.PresenteesReportTable.pack(fill=BOTH, expand=1)
 
@@ -249,15 +212,11 @@ class Attendance:
 
         self.AbsenteesReportTable.heading("roll", text="Roll Number")
         self.AbsenteesReportTable.heading("name", text="Name")
-        # self.AttendanceReportTable.heading("present", text="Present/Absent")
-        # self.AttendanceReportTable.heading("total_attendance", text="Subject Total Attendance")
 
         self.AbsenteesReportTable["show"] = "headings"
 
         self.AbsenteesReportTable.column("roll", width=100)
         self.AbsenteesReportTable.column("name", width=100)
-        # self.AttendanceReportTable.column("present", width=100)
-        # self.AttendanceReportTable.column("total_attendance", width=100)
 
         self.AbsenteesReportTable.pack(fill=BOTH, expand=1)
 
@@ -294,7 +253,6 @@ class Attendance:
                 total_absent = 0
 
                 for key, val in stu_ref.items():
-                    # total_attendance = db.reference(f"Students/{self.var_atten_dep.get()}/{self.var_atten_st_year.get()}/{key}/total_attendance/{self.var_atten_sem.get()}/{self.var_atten_sub.get()}").get()
                     if atten_rolls.setdefault(key) == 1:
                         self.PresenteesReportTable.insert("", END, values=(key, val["Student Name"]))
                         total_present += 1
@@ -303,20 +261,6 @@ class Attendance:
                         total_absent += 1
                 self.var_atten_total_presentees.set(str(total_present))
                 self.var_atten_total_absentees.set(str(total_absent))
-                # if self.var_atten_attendance == "Presentees":
-                #     for key, val in stu_ref.items():
-                #         # total_attendance = db.reference(f"Students/{self.var_atten_dep.get()}/{self.var_atten_st_year.get()}/{key}/total_attendance/{self.var_atten_sem.get()}/{self.var_atten_sub.get()}").get()
-                #         if atten_rolls.setdefault(key) == 1:
-                #             self.PresenteesReportTable.insert("", END, values=(key, val["Student Name"]))
-                #             total_present += 1
-                #     self.var_atten_total.set(str(total_present))
-                # elif self.var_atten_attendance == "Absentees":
-                #     for key, val in stu_ref.items():
-                #         # total_attendance = db.reference(f"Students/{self.var_atten_dep.get()}/{self.var_atten_st_year.get()}/{key}/total_attendance/{self.var_atten_sem.get()}/{self.var_atten_sub.get()}").get()
-                #         if atten_rolls.setdefault(key) != 1:
-                #             self.AbsenteesReportTable.insert("", END, values=(key, val["Student Name"]))
-                #             total_absent += 1
-                #     self.var_atten_total.set(str(total_absent))
 
             except Exception as es:
                 messagebox.showerror("Error", f"Due to:{str(es)}", parent=self.root)
@@ -361,11 +305,6 @@ class Attendance:
                 date_conv = datetime.strptime(f"{day} {month} {year}", "%d %m %Y")
                 date = date_conv.strftime("%d %B %Y")
 
-                # total_attendance = db.reference(
-                #     f"Students/{self.var_atten_dep.get()}/{self.var_atten_st_year.get()}/{self.var_atten_roll.get()}/total_attendance/{self.var_atten_sem.get()}/{self.var_atten_sub.get()}").get()
-                # db.reference(
-                    # f"Students/{self.var_atten_dep.get()}/{self.var_atten_st_year.get()}/{self.var_atten_roll.get()}/total_attendance/{self.var_atten_sem.get()}/{self.var_atten_sub.get()}").set(total_attendance-1)
-
                 att_ref = db.reference(
                     f"Attendance/{self.var_atten_dep.get()}/{self.var_atten_st_year.get()}/{self.var_atten_sem.get()}/{self.var_atten_sub.get()}/{date}/{self.var_atten_hour.get()}")
                 atten_rolls = att_ref.get()
@@ -383,7 +322,6 @@ class Attendance:
                 if delete > 0:
                     att_ref.child(self.var_atten_roll_presentees.get()).delete()
                     for key, val in stu_ref.items():
-                        # total_attendance = db.reference(f"Students/{self.var_atten_dep.get()}/{self.var_atten_st_year.get()}/{key}/total_attendance/{self.var_atten_sem.get()}/{self.var_atten_sub.get()}").get()
                         if key == self.var_atten_roll_presentees.get():
                             self.AbsenteesReportTable.insert("", END, values=(key, val["Student Name"]))
                             self.var_atten_total_presentees.set((int(self.var_atten_total_presentees.get()) - 1))
@@ -394,7 +332,6 @@ class Attendance:
                         return
 
                 messagebox.showinfo("Delete", "Successfully deleted student attendance", parent=self.root)
-                # self.var_atten_attendance.set("Absent")
             except Exception as es:
                 messagebox.showerror("Error", f"Due to:{str(es)}", parent=self.root)
 
@@ -423,7 +360,6 @@ class Attendance:
                                              parent=self.root)
                 if delete > 0:
                     for key, val in stu_ref.items():
-                        # total_attendance = db.reference(f"Students/{self.var_atten_dep.get()}/{self.var_atten_st_year.get()}/{key}/total_attendance/{self.var_atten_sem.get()}/{self.var_atten_sub.get()}").get()
                         if key == self.var_atten_roll_absentees.get():
                             attend = db.reference("/")
                             stud_att = attend.child('Attendance').child(self.var_atten_dep.get()).child(
