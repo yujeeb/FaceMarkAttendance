@@ -1,2 +1,3 @@
-databaseURL = ""
-storageBucket = ""
+class database:
+    databaseURL = ""
+    storageBucket = ""
