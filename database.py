@@ -1,3 +1,2 @@
-class database:
-    databaseURL = ""
-    storageBucket = ""
+databaseURL = ""
+storageBucket = ""
