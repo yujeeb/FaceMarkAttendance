@@ -19,7 +19,7 @@
     Rename the service account KEY to "serviceAccountKey.json" and store this file in the project destination
   </li>
   <li>
-    Now, all you need are the required python libraries to install.
+    Now, all you need are the required python libraries to install
   </li>
 </ul>
 
