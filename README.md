@@ -1,5 +1,7 @@
 # Face-Mark-Attendance
-
+<div>
+  Face Mark Attendance is a Facial Recognition based attendance system for schools, universities and organizations.
+</div>
 
 ## Installing and using the desktop application
 <ul>
